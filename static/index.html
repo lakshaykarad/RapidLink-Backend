@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>RapidLink Traffic Dashboard</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+ <link rel="stylesheet" href="/static/style.css">
+
+</head>
+<body>
+
+<div class="header">
+  <h1>🚦 RapidLink Traffic Simulator</h1>
+  <div class="header-right">
+    <span id="device-count">0 devices</span>
+  </div>
+</div>
+
+<div class="layout">
+  <div id="map"></div>
+
+  <div class="sidebar">
+
+    <!-- PANEL 1: Add single device -->
+    <div class="panel">
+      <div class="panel-title">📍 Add Device</div>
+      <div id="click-hint">Click map to set location</div>
+      <label>Device ID</label>
+      <input type="text" id="device-id" placeholder="device_001">
+      <div class="row2">
+        <div><label>Latitude</label><input type="number" id="lat" step="0.00001"></div>
+        <div><label>Longitude</label><input type="number" id="lng" step="0.00001"></div>
+      </div>
+      <label>Speed (km/h)</label>
+      <input type="number" id="speed" value="8" min="1" max="120">
+      <label>Road Label</label>
+      <input type="text" id="road" placeholder="Road_A">
+      <button class="btn btn-green" onclick="addDevice()">+ Add Device</button>
+    </div>
+
+    <!-- PANEL 2: Spawn many devices -->
+    <div class="panel">
+      <label>Road Label</label>
+      <input type="text" id="spawn-road" placeholder="Road_A">
+      
+      <!-- RESTORED: Count and Speed inputs -->
+      <div class="row2">
+        <div><label>Count</label><input type="number" id="spawn-count" value="10" min="1" max="100"></div>
+        <div><label>Speed km/h</label><input type="number" id="spawn-speed" value="8"></div>
+      </div>
+       
+      <div class="row2">
+        <div><label>Center Lat</label><input type="number" id="spawn-lat" step="any" placeholder="26.9124"></div>
+        <div><label>Center Lng</label><input type="number" id="spawn-lng" step="any" placeholder="75.7873"></div>
+      </div>
+      
+      <button class="btn btn-blue" onclick="spawnDevice()">⚡ Spawn</button>
+    </div>
+
+    <!-- PANEL 3: Traffic summary per road -->
+    <div class="panel">
+      <div class="panel-title">🗺 Road Summary</div>
+      <div id="traffic-summary"><p class="empty-msg">No devices yet</p></div>
+    </div>
+
+    <!-- PANEL 4: Live device list -->
+    <div class="panel">
+      <div class="panel-title">📱 Active Devices</div>
+      <button class="btn btn-red" onclick="clearAll()">🗑 Clear All</button>
+      <div id="device-list" style="margin-top:10px;"></div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/static/script.js"></script>
+
+</body>
+</html>
+
