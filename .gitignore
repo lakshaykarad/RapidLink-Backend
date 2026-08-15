@@ -1,0 +1,31 @@
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Environment variables (CRITICAL - NEVER push this to GitHub)
+.env
+.env.local
+.env.production
+
+# Alembic cache (keep the /versions folder, ignore the cache)
+alembic/__pycache__/
+alembic/*.pyc
+
+# IDE and OS garbage
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Database files (if you use SQLite locally)
+*.db
+*.sqlite3
+
+# pytest / coverage
+.pytest_cache/
+.coverage
+.text
