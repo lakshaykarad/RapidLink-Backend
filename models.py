@@ -14,7 +14,6 @@ class User(Base):
     email : Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     phone_number: Mapped[Optional[str]] = mapped_column(String(20),unique=True, index=True, nullable=True)
     hashed_password : Mapped[str] = mapped_column(String(255), nullable=False)
-    
     # Account status flags
     is_active : Mapped[bool] = mapped_column(Boolean, default=True)
     is_verified : Mapped[bool] = mapped_column(Boolean, default=False)
