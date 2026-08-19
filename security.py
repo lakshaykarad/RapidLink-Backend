@@ -21,7 +21,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated = "auto")
 def hash_password(password : str) -> str:
     return pwd_context.hash(password)
 
-def verify_passwrod (plain_password : str, hashed_password : str) -> bool:
+def verify_password(plain_password: str, hashed_password: str) -> bool:
     # Check if the entered password matches the stored hash
     return pwd_context.verify(plain_password,hashed_password)
 
@@ -29,9 +29,9 @@ def create_access_token(user_id : int) -> str:
     now = datetime.now(timezone.utc) # currenttime based on timezone
     expire = now + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES) # Expire time 
     
-    # SUB -> user_id never change so we can update user information 
+ 
     payload = {
-        "sub" : str(user_id), # Sub 
+        "sub" : str(user_id),  # SUB -> user_id never change so we can update user information 
         "type" : "access",
         "iat" : now,
         "exp" : expire
@@ -56,7 +56,7 @@ def create_refresh_token(user_id : int) -> str:
     return jwt.encode(payload,REFRESH_SECRET_KEY,algorithm=ALGORITHM)
 
 
-def verify_access_token(token : str) -> Option[dict]:
+def verify_access_token(token : str) -> Optional[dict]:
     
     try:
         payload = jwt.decode(token,SECRET_KEY, algorithms=[ALGORITHM])
