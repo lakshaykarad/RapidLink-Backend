@@ -1,14 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, status 
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from database import get_db
 from models import User, UserProfile
-from schemas import SignupRequest
+from schemas import SignupRequest, UserResponse, LoginRequest, UserProfileResponse
 
 from security import (
-    hash_password
+    hash_password, create_access_token,verify_access_token,create_refresh_token,verify_refresh_token,verify_password
 )
 
 routes = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -64,3 +64,56 @@ def signup(request : SignupRequest, db : Session = Depends(get_db)):
         "user_id": new_user.id,
         "email": new_user.email
     }
+    
+
+@routes.post("/login")
+def login(
+    response: Response,
+    request : LoginRequest,
+    db : Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.email == request.email).first()   
+    
+    if not user:
+        raise HTTPException(
+            status_code= status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+        
+    if not verify_password(request.password.get_secret_value(), user.hashed_password):
+        raise HTTPException (
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+        
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is deactivated. Please contact support."
+        )
+    
+    # create token 
+    access_token = create_access_token(user.id)
+    refresh_token = create_refresh_token(user.id)
+    
+    # Set cookies 
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly= True, # Stop JS to read cookie,
+        secure= False, # For testing
+        samesite="Strict",
+        max_age= 7 * 24 * 60 * 60
+    )
+    
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token, # Added for Android support!
+        "token_type": "bearer",         # Fixed: Added missing comma
+        "expires_in": 15 * 60,
+        "user_id": user.id,
+        "email": user.email
+    }
+
+
+
