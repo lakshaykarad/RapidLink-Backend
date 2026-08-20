@@ -7,6 +7,7 @@ from database import get_db
 from models import User, UserProfile
 from schemas import SignupRequest, UserResponse, LoginRequest, UserProfileResponse, TokenRequest
 from jose import JWTError, ExpiredSignatureError
+from dependencies import get_current_active_user
 
 from security import (
     hash_password, create_access_token,verify_access_token,create_refresh_token,verify_refresh_token,verify_password
@@ -152,3 +153,22 @@ def refresh(
         "token_type" : "bearer",
         "expires_in" : 15 * 60
     }
+    
+    
+@router.post("/logout")
+def logout(response : Response):
+    # Logout User
+    response.delete_cookie("refresh_token")
+    return {"message": "Logged out successfully"}
+
+
+@router.get("/me", response_model=UserResponse)
+def get_my_profile(current_user : User = Depends(get_current_active_user)):
+    return current_user
+
+@router.delete("/me/delete")
+def delete_my_account(current_user : User = Depends(get_current_active_user), db : Session = Depends(get_db)):
+    db.delete(current_user)
+    db.commit()
+    
+    return {"message": "Account deleted forever."}
