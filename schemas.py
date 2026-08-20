@@ -58,3 +58,7 @@ class UserResponse(BaseModel):
     created_at : datetime 
     profile : Optional[UserProfileResponse]  | None = None
     model_config = ConfigDict(from_attributes=True)
+    
+    
+class TokenRequest(BaseModel):
+    refresh_token : Optional[str] = None

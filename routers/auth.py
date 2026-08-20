@@ -1,21 +1,22 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-
+from typing import Dict, Any, Optional
 from database import get_db
 from models import User, UserProfile
-from schemas import SignupRequest, UserResponse, LoginRequest, UserProfileResponse
+from schemas import SignupRequest, UserResponse, LoginRequest, UserProfileResponse, TokenRequest
+from jose import JWTError, ExpiredSignatureError
 
 from security import (
     hash_password, create_access_token,verify_access_token,create_refresh_token,verify_refresh_token,verify_password
 )
 
-routes = APIRouter(prefix="/auth", tags=["Authentication"])
+router  = APIRouter(prefix="/auth", tags=["Authentication"])
 # OAuth2PasswordBearer -> If the user does not provide the token in the header, reject his request before checking the verifytoken. 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
-@routes.post("/signup", status_code= status.HTTP_201_CREATED)
+@router.post("/signup", status_code= status.HTTP_201_CREATED)
 def signup(request : SignupRequest, db : Session = Depends(get_db)):
     
     existing_user = db.query(User).filter(User.email == request.email).first()
@@ -66,7 +67,7 @@ def signup(request : SignupRequest, db : Session = Depends(get_db)):
     }
     
 
-@routes.post("/login")
+@router.post("/login")
 def login(
     response: Response,
     request : LoginRequest,
@@ -116,4 +117,38 @@ def login(
     }
 
 
+@router.post("/refresh")
+def refresh(
+    request : Request,
+    db : Session = Depends(get_db),
+    token_request : Optional[TokenRequest] = None
+):
+    refresh_token = request.cookies.get("refresh_token") or (token_request.refresh_token if token_request else None)
+      
+    if not refresh_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token required"
+        )
+    
+    payload = verify_refresh_token(refresh_token)
 
+    if not payload or not payload.get("sub"):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired refresh token"
+        )
+        
+    user = db.query(User).filter(User.id == int(payload.get("sub"))).first()
+    
+    if not user or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found or deactivated"
+        )
+
+    return {
+        "access_token" : create_access_token(user.id),
+        "token_type" : "bearer",
+        "expires_in" : 15 * 60
+    }
