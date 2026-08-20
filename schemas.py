@@ -41,6 +41,8 @@ class SignupRequest(BaseModel):
             raise ValueError("Passwords do not match")
         return self  
     
+    
+    
 class LoginRequest(BaseModel):
     email : EmailStr = Field(title="Mail", examples=["acb@gmail.com"])
     password : SecretStr = Field(min_length=8, max_length=255)

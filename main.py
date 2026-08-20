@@ -1,11 +1,16 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import json, os, csv
 from pydantic import BaseModel
 from typing import List
+from routers import auth
+from models import User
+from dependencies import get_current_active_user
 
 app = FastAPI()
+
+app.include_router(auth.router)
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 DEVICES_FILE = os.path.join(script_dir, "devices.json")
@@ -49,7 +54,9 @@ def get_devices():
 
 @app.post("/device/add")
 def add_device(device_id: str, lat: float, lng: float,
-               speed: float, road: str = "unknown"):
+               speed: float, road: str = "unknown", 
+               current_user : User = Depends(get_current_active_user)
+               ):
     devices = load_devices()
     devices[device_id] = {"lat": lat, "lng": lng, "speed": speed, "road": road}
     save_devices(devices)
