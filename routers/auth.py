@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from typing import Dict, Any, Optional
@@ -45,7 +45,7 @@ def signup(request : SignupRequest, db : Session = Depends(get_db)):
     user_profile = UserProfile(
         user_id = new_user.id,
         full_name = request.full_name,
-        gender = request.gender
+        gender = request.gender.value
     )
     
     db.add(user_profile)
@@ -71,10 +71,10 @@ def signup(request : SignupRequest, db : Session = Depends(get_db)):
 @router.post("/login")
 def login(
     response: Response,
-    request : LoginRequest,
+    request : OAuth2PasswordRequestForm = Depends(),
     db : Session = Depends(get_db)
 ):
-    user = db.query(User).filter(User.email == request.email).first()   
+    user = db.query(User).filter(User.email == request.username).first()   
     
     if not user:
         raise HTTPException(
@@ -82,7 +82,7 @@ def login(
             detail="Invalid email or password"
         )
         
-    if not verify_password(request.password.get_secret_value(), user.hashed_password):
+    if not verify_password(request.password, user.hashed_password):
         raise HTTPException (
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"

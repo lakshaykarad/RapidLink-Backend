@@ -7,12 +7,17 @@ from typing import List
 from routers import auth
 from models import User
 from dependencies import get_current_active_user
+from database import engine
+from models import Base
 
+# Creates all tables in the database
 app = FastAPI()
 
 app.include_router(auth.router)
 
+Base.metadata.create_all(bind=engine)
 script_dir = os.path.dirname(os.path.abspath(__file__))
+
 DEVICES_FILE = os.path.join(script_dir, "devices.json")
 CSV_FILE = os.path.join(script_dir, "traffic.csv")
 

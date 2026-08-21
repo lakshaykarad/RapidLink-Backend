@@ -41,8 +41,6 @@ class SignupRequest(BaseModel):
             raise ValueError("Passwords do not match")
         return self  
     
-    
-    
 class LoginRequest(BaseModel):
     email : EmailStr = Field(title="Mail", examples=["acb@gmail.com"])
     password : SecretStr = Field(min_length=8, max_length=255)
@@ -60,7 +58,6 @@ class UserResponse(BaseModel):
     created_at : datetime 
     profile : Optional[UserProfileResponse]  | None = None
     model_config = ConfigDict(from_attributes=True)
-    
     
 class TokenRequest(BaseModel):
     refresh_token : Optional[str] = None
